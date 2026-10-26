@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Encrypted / Decrypted</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      color: #d8d8d8;
+      font-family: Consolas, "Cascadia Mono", "IBM Plex Mono", "Courier New", monospace;
+      overflow: hidden;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100%;
+    }
+    .pane {
+      position: relative;
+      overflow: hidden;
+      background: #000;
+    }
+    .pane + .pane { border-left: 1px solid #1c1c1c; }
+    .dump {
+      padding: 10px 12px 28px;
+      font-size: 13px;
+      line-height: 1.42;
+      white-space: pre;
+      letter-spacing: 0;
+    }
+    .row { display: flex; gap: 14px; }
+    .off { color: #6e6e6e; flex: 0 0 72px; }
+    .hex { color: #e8e8e8; flex: 1; }
+    .asc { color: #cfcfcf; flex: 0 0 10.2ch; }
+    .title {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 600;
+      font-size: min(7.6vw, 92px);
+      color: rgba(210, 210, 210, 0.55);
+      letter-spacing: 0.02em;
+      pointer-events: none;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.45);
+    }
+    .cap {
+      position: absolute;
+      left: 12px;
+      bottom: 8px;
+      font-size: 11px;
+      color: #7a7a7a;
+      font-family: "Segoe UI", sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div class="split">
+    <section class="pane">
+      <div class="dump" id="enc"></div>
+      <div class="cap">AES-256-GCM</div>
+    </section>
+    <section class="pane">
+      <div class="dump" id="dec"></div>
+      <div class="cap">Tremor Tracker session</div>
+    </section>
+  </div>
+  <script>
+    const PLAIN = [
+      "CREATE TABLE sessions (",
+      "  id TEXT PRIMARY KEY NOT NULL,",
+      "  user_id UUID NOT NULL,",
+      "  started_at TIMESTAMPTZ NOT NULL,",
+      "  duration_s REAL NOT NULL,",
+      "  position TEXT CHECK (position IN",
+      "    ('rest','postural','kinetic')),",
+      "  rms_g REAL NOT NULL,",
+      "  dominant_hz REAL NOT NULL,",
+      "  peak_ratio REAL NOT NULL,",
+      "  analysis_mode TEXT NOT NULL",
+      ");",
+      "ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;",
+      "CREATE POLICY sessions_select_own ON sessions",
+      "  FOR SELECT USING (auth.uid() = user_id);",
+      "INSERT INTO sessions VALUES (",
+      "  '7c2a91e0-4b18-4d2e-9f03-aa1c8e4f90e2',",
+      "  'a1c3e7b2-11d4-4f08-9c55-0b2d6e8a4410',",
+      "  '2026-10-25T18:12:04Z', 30, 'rest',",
+      "  0.14, 5.80, 0.62, 'axes'",
+      ");",
+      "-- session token in iOS Keychain / Android Keystore",
+      "-- sync over TLS 1.3; only this user_id is visible",
+    ].join("\n");
+
+    const ROWS = 28;
+    const WIDTH = 16;
+
+    function ascii(n) {
+      return n >= 32 && n < 127 ? String.fromCharCode(n) : ".";
+    }
+    function hexByte(n) {
+      return n.toString(16).toUpperCase().padStart(2, "0");
+    }
+    function dump(bytes, rows) {
+      const lines = [];
+      for (let r = 0; r < rows; r++) {
+        const off = r * WIDTH;
+        const slice = [];
+        let asc = "";
+        for (let i = 0; i < WIDTH; i++) {
+          const b = off + i < bytes.length ? bytes[off + i] : 0;
+          slice.push(hexByte(b));
+          asc += ascii(b);
+        }
+        const hex = slice.slice(0, 8).join(" ") + "  " + slice.slice(8).join(" ");
+        lines.push(
+          `<div class="row"><span class="off">${off.toString(16).toUpperCase().padStart(8, "0")}</span>` +
+          `<span class="hex">${hex}</span><span class="asc">${esc(asc)}</span></div>`
+        );
+      }
+      return lines.join("");
+    }
+    function esc(s) {
+      return s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+    }
+
+    (async () => {
+      const data = new TextEncoder().encode(PLAIN);
+      const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt"]);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const packed = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, data));
+      const cipher = new Uint8Array(iv.length + packed.length);
+      cipher.set(iv, 0);
+      cipher.set(packed, iv.length);
+      const plain = new Uint8Array(ROWS * WIDTH);
+      plain.set(data.subarray(0, plain.length));
+      document.getElementById("enc").innerHTML = dump(cipher, ROWS);
+      document.getElementById("dec").innerHTML = dump(plain, ROWS);
+    })();
+  </script>
+</body>
+</html>

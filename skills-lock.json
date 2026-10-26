@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "skills": {
+    "beautiful-article": {
+      "source": "ConardLi/garden-skills",
+      "sourceType": "github",
+      "skillPath": "skills/beautiful-article/SKILL.md",
+      "computedHash": "4c947cd80c7f0d29313513a95dc936c5de7c524dedec9bd348df2be10a6fb9f9"
+    },
+    "gpt-image-2": {
+      "source": "ConardLi/garden-skills",
+      "sourceType": "github",
+      "skillPath": "skills/gpt-image-2/SKILL.md",
+      "computedHash": "fa7d02eb50e66892f28e8e2705e92256668ab63ec2f813795f196cababa67a93"
+    },
+    "kb-retriever": {
+      "source": "ConardLi/garden-skills",
+      "sourceType": "github",
+      "skillPath": "skills/kb-retriever/SKILL.md",
+      "computedHash": "a1d68bad21bc1c990d5186e8bfd4777ac79befad7d013f06486b5945a926c4cc"
+    },
+    "motion-showreel": {
+      "source": "ConardLi/garden-skills",
+      "sourceType": "github",
+      "skillPath": "skills/motion-showreel/SKILL.md",
+      "computedHash": "61723927292e7e2809057525f72fcc6dc4c23663fccb481131253ffd24ca909d"
+    },
+    "tastemaker": {
+      "source": "codeswithroh/tastemaker",
+      "sourceType": "github",
+      "skillPath": "skills/tastemaker/SKILL.md",
+      "computedHash": "ef080ad8d242527d63cee1d94b7e5030aa8988cc20a0029f6a596d321843af9d"
+    },
+    "web-design-engineer": {
+      "source": "ConardLi/garden-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-engineer/SKILL.md",
+      "computedHash": "62a8ab0211bfad141e6866148de5d93c2edb307b5de41276909bcb559e6e93f2"
+    },
+    "web-video-presentation": {
+      "source": "ConardLi/garden-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-video-presentation/SKILL.md",
+      "computedHash": "71822111710b4295d3db11af283d6cf484bafe2bcb5e3053cd393865077de662"
+    }
+  }
+}
