@@ -30,6 +30,13 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY
 
 Those two values are browser-visible configuration, not server secrets. Do not add the Supabase service-role key or an AI-provider key to Netlify. On a phone browser, the first reading asks for motion permission directly from the Start button.
 
+Google sign-in also needs these one-time settings outside Netlify:
+
+1. In **Supabase → Authentication → URL Configuration**, set **Site URL** to the exact Netlify address, such as `https://your-site.netlify.app`, and add `https://your-site.netlify.app/**` to **Redirect URLs**.
+2. In **Google Cloud → OAuth client**, add that same Netlify origin under **Authorized JavaScript origins**. Its **Authorized redirect URI** remains `https://<your-project-ref>.supabase.co/auth/v1/callback`.
+
+The Netlify URL is never a Google client secret. The Google client secret belongs only in Supabase’s Google provider configuration and must not be committed or added to Netlify.
+
 ### Account & cloud database
 
 The app requires sign-in. [Supabase](https://supabase.com) is the backend: Postgres for session rows, Auth for email and Google sign-in, and Row Level Security so each user only sees their own data. The phone also keeps a SQLite cache, so measuring and history still work offline; changes upload when the app is online.

@@ -1,11 +1,15 @@
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
+import { Platform } from 'react-native';
 
 import { getSupabase } from '@/lib/supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export function oauthRedirectUri(): string {
+  // A static Netlify deployment has no native auth/callback document. On web,
+  // return to the app root so Supabase can exchange the PKCE code there.
+  if (Platform.OS === 'web' && typeof window !== 'undefined') return window.location.origin;
   return makeRedirectUri({ scheme: 'tremortracker', path: 'auth/callback' });
 }
 
@@ -42,6 +46,13 @@ export async function signInWithGoogle(): Promise<{ error: string | null }> {
   });
   if (error) return { error: error.message };
   if (!data.url) return { error: 'Could not start Google sign-in.' };
+
+  // A same-tab redirect is more reliable than a popup on mobile browsers.
+  // `detectSessionInUrl` handles the PKCE code when the app root reloads.
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    window.location.assign(data.url);
+    return { error: null };
+  }
 
   const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
   if (result.type === 'cancel' || result.type === 'dismiss') return { error: null };

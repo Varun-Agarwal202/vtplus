@@ -31,7 +31,9 @@ export function getSupabase(): SupabaseClient {
         storage,
         autoRefreshToken: true,
         persistSession: true,
-        detectSessionInUrl: false,
+        // Web returns from Google with a PKCE code at the Netlify site root.
+        // Native completes its separate browser session in `lib/oauth.ts`.
+        detectSessionInUrl: Platform.OS === 'web',
         // backup codes for two-step sign-in; harmless if the server has them off
         experimental: { recoveryCodes: true },
       },
