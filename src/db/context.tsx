@@ -1,7 +1,6 @@
 /**
- * Database provider/hook for native. `context.web.tsx` replaces this on web,
- * where the app is not supported (no accelerometer, and expo-sqlite's web
- * worker build is still alpha), so expo-sqlite never enters the web bundle.
+ * Database provider/hook for native. `context.web.tsx` supplies the equivalent
+ * provider for the browser's local SQLite implementation.
  */
 import { SQLiteProvider, useSQLiteContext, type SQLiteDatabase } from 'expo-sqlite';
 import React from 'react';

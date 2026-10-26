@@ -70,9 +70,11 @@ export async function migrate(db: SQLiteDatabase): Promise<void> {
     const next = current + 1;
     const sql = MIGRATIONS[next];
     if (!sql) throw new Error(`Missing migration to schema version ${next}`);
-    await db.withExclusiveTransactionAsync(async (tx) => {
-      await tx.execAsync(sql);
-      await tx.execAsync(`PRAGMA user_version = ${next}`);
+    // SQLite's exclusive transaction API is native-only. Initialization gates
+    // all consumers, so the standard transaction is safe on web and native.
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(sql);
+      await db.execAsync(`PRAGMA user_version = ${next}`);
     });
     current = next;
   }

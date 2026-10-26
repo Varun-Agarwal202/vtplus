@@ -2,6 +2,14 @@
   command = "npm run build:web"
   publish = "dist"
 
+# Required by expo-sqlite's WebAssembly worker, which provides private,
+# on-device browser storage for sessions.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Embedder-Policy = "credentialless"
+    Cross-Origin-Opener-Policy = "same-origin"
+
 # Session details are stored locally and should not be deep-linked from a
 # static host. Let the client load that local route rather than returning 404.
 [[redirects]]
