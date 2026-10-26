@@ -12,6 +12,24 @@ cp .env.example .env    # add your Supabase URL + anon key (see below)
 npx expo start          # scan the QR code with Expo Go (iOS or Android)
 ```
 
+### Publish the web version on Netlify
+
+This project is ready for a static Netlify deployment. Import the GitHub repository in Netlify, then keep the detected settings or use:
+
+```text
+Build command: npm run build:web
+Publish directory: dist
+```
+
+Add these environment variables in **Site configuration → Environment variables** before deploying:
+
+```text
+EXPO_PUBLIC_SUPABASE_URL
+EXPO_PUBLIC_SUPABASE_ANON_KEY
+```
+
+Those two values are browser-visible configuration, not server secrets. Do not add the Supabase service-role key or an AI-provider key to Netlify. On a phone browser, the first reading asks for motion permission directly from the Start button.
+
 ### Account & cloud database
 
 The app requires sign-in. [Supabase](https://supabase.com) is the backend: Postgres for session rows, Auth for email and Google sign-in, and Row Level Security so each user only sees their own data. The phone also keeps a SQLite cache, so measuring and history still work offline; changes upload when the app is online.

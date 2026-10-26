@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text as RNText, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Text as RNText, View } from 'react-native';
 import Animated from 'react-native-reanimated';
+import { Accelerometer } from 'expo-sensors';
 
 import { useRepository } from '@/data/repository-context';
 import { POSITION_HELP, POSITION_LABEL, POSITION_SHORT, POSITIONS, type Position, type Session } from '@/db/types';
@@ -24,13 +25,25 @@ function StartButton({ seconds, position }: { seconds: number; position: Positio
   const { colors, textScale, largeTargets, highContrast } = useTheme();
   const press = usePressScale(0.95);
   const size = Math.round((largeTargets ? 160 : 144) * Math.min(textScale, 1.4));
+  const start = async () => {
+    // Mobile browsers only grant motion access from a direct tap. Recording
+    // starts after a countdown, so asking in Recorder.start() would be too late.
+    if (Platform.OS === 'web') {
+      const permission = await Accelerometer.requestPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Motion access needed', 'Allow motion access in your browser to take a reading.');
+        return;
+      }
+    }
+    router.push({ pathname: '/record', params: { position } });
+  };
   return (
     <Animated.View style={press.style}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Start a ${seconds} second ${POSITION_LABEL[position].toLowerCase()} reading`}
         accessibilityHint={POSITION_HELP[position]}
-        onPress={guard(() => router.push({ pathname: '/record', params: { position } }))}
+        onPress={guard(start)}
         onPressIn={press.onPressIn}
         onPressOut={press.onPressOut}
         style={{
